@@ -6,12 +6,14 @@ export type ThemedTextProps = TextProps & {
   lightColor?: string;
   darkColor?: string;
   type?: 'default' | 'title' | 'defaultSemiBold' | 'subtitle' | 'link';
+  align?: 'left' | 'center' | 'right'; 
 };
 
 export function ThemedText({
   style,
   lightColor,
   darkColor,
+  align,
   type = 'default',
   ...rest
 }: ThemedTextProps) {
@@ -27,6 +29,7 @@ export function ThemedText({
         type === 'subtitle' ? styles.subtitle : undefined,
         type === 'link' ? styles.link : undefined,
         style,
+        align ? { textAlign: align } : undefined,
       ]}
       {...rest}
     />
