@@ -1,12 +1,12 @@
 import { ThemedButton } from "@/components/ThemedButton";
 import { ThemedText } from "@/components/ThemedText";
 import { router } from "expo-router";
-import { SafeAreaView } from "react-native";
+import { SafeAreaView, View } from "react-native";
 
 
 export default function LoginScreen(){
     return(
-        <SafeAreaView style={{ flex: 1, justifyContent: "center" }}>
+        <View style={{ flex: 1, justifyContent: "center" }}>
             <ThemedText type="title" align="center">
                 Login to Continue
             </ThemedText>
@@ -18,6 +18,6 @@ export default function LoginScreen(){
                 bgColor="#c1e1c9"
                 txtColor="#194d33"
             />
-        </SafeAreaView>
+        </View>
     )
 }

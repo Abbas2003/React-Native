@@ -1,56 +1,80 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { Image, StyleSheet, Platform, useColorScheme, ActivityIndicator, FlatList } from 'react-native';
 
 import { HelloWave } from '@/components/HelloWave';
 import ParallaxScrollView from '@/components/ParallaxScrollView';
 import { ThemedText } from '@/components/ThemedText';
 import { ThemedView } from '@/components/ThemedView';
+import { useCallback, useEffect, useState } from 'react';
+import { Category, Product } from '@/constants/Interfaces';
 
 export default function HomeScreen() {
+  const [total, setTotal] = useState<number>(0);
+  const [products, setProducts] = useState<Product[]>([]);
+  const [categories, setCategories] = useState<Category[]>([])
+  const [chosenCategory, setChosenCategory] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
+  const [limit, setLimit] = useState<number>(30);
+  const [skip, setSkip] = useState<number>(0);
+  const [refreshing, setRefreshing] = useState<boolean>(false)
+
+
+  useEffect(() => {
+    getCategories();
+  }, [])
+
+  useEffect(() => {
+    getProducts();
+  }, [chosenCategory, limit, skip, refreshing])
+
+  const onRefresh = useCallback(() => {
+    setRefreshing(true);
+  }, []);
+
+  const getCategories = useCallback(async () => {
+    let categories: any = await fetch('https://dummyjson.com/products/categories');
+    categories = await categories.json();;
+    setCategories(categories)
+  }, [])
+
+  const getProducts = async () => {
+    setLoading(true)
+    let url = chosenCategory
+      ? `https://dummyjson.com/products/category/${chosenCategory}`
+      : "https://dummyjson.com/products";
+
+    let products: any = await fetch(`${url}/?limit=${limit}`)
+    products = await products.json();
+    setProducts(products?.products)
+    setTotal(products?.total)
+    setLoading(false)
+    setRefreshing(false)
+  }
+
+  console.log("product=>", products, limit, total, products.length);
+  const theme = useColorScheme() || "light"
+
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
+    <ThemedView style={{ flex: 1 }}>
+      {loading ? (
+        <ActivityIndicator 
+          size={"large"}
+          color={"black"}
+          style={{
+            alignSelf: "center",
+            position: "absolute",
+            width: "100%",
+            marginVertical: 20
+          }}
         />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+      ) : null}
+
+
+      <FlatList 
+        data={products}
+        keyExtractor={(data) => `${data.id}`}
+        numColumns={2}
+      />
+    </ThemedView>
   );
 }
 
